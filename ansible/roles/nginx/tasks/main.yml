@@ -1,0 +1,14 @@
+---
+# Install Nginx
+- name: Install Nginx
+  ansible.builtin.dnf:
+    name: nginx
+    state: present
+  notify:
+    - Restart Nginx
+
+# Ensure Nginx is up to date
+- name: Upgrade Nginx packages
+  ansible.builtin.dnf:
+    name: nginx
+    state: latest

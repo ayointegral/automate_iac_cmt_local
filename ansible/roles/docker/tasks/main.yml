@@ -1,0 +1,74 @@
+---
+- name: Ensure all packages are up to date
+  yum:
+    name: '*'
+    state: latest
+
+- name: Clean all yum cache
+  command: yum clean all
+
+- name: Install required packages for Docker
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+
+- name: Add Docker repository
+  command: >
+    yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+  args:
+    creates: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install Docker
+  yum:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+      - docker-buildx-plugin
+      - docker-compose-plugin
+    state: latest
+
+- name: Install container-selinux
+  yum:
+    name: container-selinux
+    state: present
+  when: ansible_distribution_major_version is version('9', '<')
+
+- name: Start and enable Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Ensure current user is added to the docker group
+  user:
+    name: "{{ ansible_user }}"
+    groups: docker
+    append: yes
+
+- name: Check if Docker group exists
+  getent:
+    database: group
+    key: docker
+  register: docker_group
+
+- name: Create Docker group if it doesn't exist
+  group:
+    name: docker
+    state: present
+  when: docker_group is not defined
+
+- name: Change ownership of Docker socket to root:docker
+  file:
+    path: /var/run/docker.sock
+    owner: root
+    group: docker
+    mode: '0660'
+
+- name: Restart Docker service after permission changes
+  systemd:
+    name: docker
+    state: restarted

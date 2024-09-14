@@ -1,0 +1,7 @@
+ansible_vault_password.txt
+vagrant/.vagrant
+terraform/.terraform
+terraform/.terraform.lock.hcl
+ansible/ansible.log
+terraform/terraform.tfstate
+terraform/terraform.tfstate.backup

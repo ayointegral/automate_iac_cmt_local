@@ -1,0 +1,9 @@
+---
+- hosts: web
+  become: true
+  vars_files:
+    - group_vars/all/vault.yml
+  roles:
+    - python
+    - docker
+    - nginx
