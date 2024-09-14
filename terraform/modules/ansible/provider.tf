@@ -1,7 +1,3 @@
-module "ansible" {
-  source = "./modules/ansible"
-}
-
 terraform {
   required_providers {
     ansible = {
