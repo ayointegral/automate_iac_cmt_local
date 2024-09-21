@@ -1,9 +1,4 @@
 ---
-- name: Ensure all packages are up to date
-  yum:
-    name: '*'
-    state: latest
-
 - name: Clean all yum cache
   command: yum clean all
 
@@ -66,7 +61,7 @@
     path: /var/run/docker.sock
     owner: root
     group: docker
-    mode: '0660'
+    mode: "0660"
 
 - name: Restart Docker service after permission changes
   systemd:
