@@ -1,9 +1,4 @@
 ---
-- name: Ensure all packages are up to date
-  yum:
-    name: '*'
-    state: latest
-
 - name: Clean all yum cache
   command: yum clean all
 
