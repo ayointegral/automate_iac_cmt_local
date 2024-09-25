@@ -1,0 +1,9 @@
+version: 2
+
+# List of Restylers (formatters/linters) you want to apply
+restylers:
+  - image: ansible-lint
+    entry: ansible-lint
+    file_extensions:
+      - yml
+      - yaml
