@@ -13,13 +13,13 @@
     src: /etc/hosts
     dest: /etc/hosts.bak
     remote_src: true
-    mode: '0644'
+    mode: "0644"
 
 - name: Replace /etc/hosts with correct entries
   ansible.builtin.template:
     src: hosts.j2
     dest: /etc/hosts
-    mode: '0644'
+    mode: "0644"
 
 # Manage /etc/resolv.conf
 - name: Ensure /etc/resolv.conf is correctly configured
@@ -36,13 +36,13 @@
         src: /etc/resolv.conf
         dest: /etc/resolv.conf.bak
         remote_src: true
-        mode: '0644'
+        mode: "0644"
 
     - name: Update /etc/resolv.conf
       ansible.builtin.template:
         src: resolv.conf.j2
         dest: /etc/resolv.conf
-        mode: '0644'
+        mode: "0644"
 
     - name: Add immutable attribute to /etc/resolv.conf
       ansible.builtin.command:
@@ -54,14 +54,14 @@
   ansible.builtin.template:
     src: krb5.conf.j2
     dest: /etc/krb5.conf
-    mode: '0644'
+    mode: "0644"
 
 # Configure SSSD for the domain
 - name: Configure SSSD for the domain
   ansible.builtin.template:
     src: sssd.conf.j2
     dest: /etc/sssd/sssd.conf
-    mode: '0600'
+    mode: "0600"
 
 # Set up authselect with mkhomedir and apply changes
 - name: Set up authselect with mkhomedir
@@ -85,7 +85,7 @@
   ansible.builtin.template:
     src: chrony.conf.j2
     dest: /etc/chrony.conf
-    mode: '0644'
+    mode: "0644"
 
 # Ensure chronyd service is running
 - name: Start and enable chronyd service

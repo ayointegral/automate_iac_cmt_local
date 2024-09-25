@@ -12,14 +12,12 @@
       -InterfaceAlias "Ethernet" `
       -ServerAddresses {{ windows_dns_ip }}
 
-
 - name: Install AD Domain Services and DNS roles
   ansible.windows.win_feature:
     name:
       - AD-Domain-Services
       - DNS
     state: present
-
 
 - name: Promote server to a Domain Controller with DNS
   ansible.windows.win_shell: |
@@ -31,7 +29,6 @@
       -InstallDNS `
       -Force `
       -NoRebootOnCompletion $false
-
 
 - name: Reboot server to complete AD promotion
   ansible.windows.win_reboot:

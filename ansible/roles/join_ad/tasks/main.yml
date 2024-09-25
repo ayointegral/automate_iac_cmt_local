@@ -38,8 +38,8 @@
 - name: Prevent NetworkManager from overwriting resolv.conf
   lineinfile:
     path: /etc/NetworkManager/NetworkManager.conf
-    regexp: '^dns=none'
-    line: 'dns=none'
+    regexp: "^dns=none"
+    line: "dns=none"
     state: present
   become: true
 
@@ -96,5 +96,5 @@
     block: |
       %domain\ admins@{{ ad_domain }} ALL=(ALL) NOPASSWD: ALL
       %{{ ad_domain }}\\domain\ users ALL=(ALL) ALL
-  validate: 'visudo -cf %s'
+  validate: "visudo -cf %s"
   become: true
