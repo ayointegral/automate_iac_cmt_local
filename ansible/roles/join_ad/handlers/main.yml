@@ -1,11 +1,11 @@
 ---
 # handlers/main.yml
 - name: Restart SSSD
-  service:
+  ansible.builtin.service:
     name: sssd
     state: restarted
 
 - name: Restart NetworkManager
-  service:
+  ansible.builtin.service:
     name: NetworkManager
     state: restarted

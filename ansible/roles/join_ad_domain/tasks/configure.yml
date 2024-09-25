@@ -78,7 +78,7 @@
 - name: Remove the refclock line from chrony config
   ansible.builtin.lineinfile:
     path: /etc/chrony.conf
-    regexp: '^refclock PHC \/dev\/ptp_hyperv'
+    regexp: ^refclock PHC \/dev\/ptp_hyperv
     state: absent
 
 - name: Update chrony config with AD IP and required settings

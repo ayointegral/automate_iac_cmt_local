@@ -1,8 +1,9 @@
+---
 # .restyled.yaml
 
 restylers:
   - name: ansible-lint
     enabled: true
     include:
-      - '**/*.yml'
-      - '**/*.yaml'
+      - "**/*.yml"
+      - "**/*.yaml"

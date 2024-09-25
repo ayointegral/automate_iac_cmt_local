@@ -5,5 +5,5 @@
     - group_vars/web.yml
   tasks:
     - name: Print host variables
-      debug:
+      ansible.builtin.debug:
         var: hostvars[inventory_hostname]

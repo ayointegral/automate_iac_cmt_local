@@ -1,7 +1,7 @@
 ---
 # roles/join_ad/tasks/main.yml
 - name: Install prerequisites for AD domain join
-  package:
+  ansible.builtin.package:
     name:
       - sssd
       - realmd
@@ -14,48 +14,48 @@
     state: present
 
 - name: Update /etc/hosts with the domain and AD information
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/hosts
     line: "{{ machine_ip }} {{ hostname }}.{{ ad_domain }} {{ hostname }}"
     state: present
   become: true
 
 - name: Add AD IP to /etc/hosts
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/hosts
     line: "{{ ad_ip }} ad.{{ ad_domain }} ad"
     state: present
   become: true
 
 - name: Set AD server as the nameserver in resolv.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/resolv.conf
-    line: "nameserver {{ ad_ip }}"
+    line: nameserver {{ ad_ip }}
     state: present
-    create: yes
+    create: true
   become: true
 
 - name: Prevent NetworkManager from overwriting resolv.conf
-  lineinfile:
+  ansible.builtin.lineinfile:
     path: /etc/NetworkManager/NetworkManager.conf
-    regexp: "^dns=none"
-    line: "dns=none"
+    regexp: ^dns=none
+    line: dns=none
     state: present
   become: true
 
 - name: Restart NetworkManager to apply DNS changes
-  service:
+  ansible.builtin.service:
     name: NetworkManager
     state: restarted
   become: true
 
 - name: Join the machine to the AD domain using realm
-  command: >
+  ansible.builtin.command: >
     realm join --user={{ ad_admin_user }} --password={{ ad_admin_password }} {{ ad_domain }}
   become: true
 
 - name: Configure SSSD for AD domain
-  blockinfile:
+  ansible.builtin.blockinfile:
     path: /etc/sssd/sssd.conf
     block: |
       [sssd]
@@ -77,15 +77,15 @@
   become: true
 
 - name: Set appropriate permissions for sssd.conf
-  file:
+  ansible.builtin.file:
     path: /etc/sssd/sssd.conf
     owner: root
     group: root
-    mode: 0600
+    mode: "0600"
   become: true
 
 - name: Restart SSSD service
-  service:
+  ansible.builtin.service:
     name: sssd
     state: restarted
   become: true
@@ -96,5 +96,5 @@
     block: |
       %domain\ admins@{{ ad_domain }} ALL=(ALL) NOPASSWD: ALL
       %{{ ad_domain }}\\domain\ users ALL=(ALL) ALL
-  validate: "visudo -cf %s"
+  validate: visudo -cf %s
   become: true

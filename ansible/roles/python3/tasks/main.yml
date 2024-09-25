@@ -1,30 +1,30 @@
+---
 ## Tasks for the python3 role.
 ##
-- name: create download directory
-  file:
+- name: Create download directory
+  ansible.builtin.file:
     path: "{{ python3_tmpdir }}"
     state: directory
-      
-- name: OS-specific tasks
-  include_tasks: "{{ ansible_distribution|lower }}.yml"
 
-- name: pyenv tasks
-  include_tasks: pyenv.yml
+- name: OS-specific tasks
+  ansible.builtin.include_tasks: "{{ ansible_distribution|lower }}.yml"
+- name: Pyenv tasks
+  ansible.builtin.include_tasks: pyenv.yml
   when: python3_pyenv != None
 
-- name: install/upgrade utilities
+- name: Install/upgrade utilities
   become: true
-  command: "{{ python3_command }} -m pip install --upgrade {{ item }}"
+  ansible.builtin.command: "{{ python3_command }} -m pip install --upgrade {{ item }}"
   with_items:
     - pip
     - virtualenv
   environment:
     PYENV_VERSION: "{{ python3_pyenv }}"
-      
-- name: add local Python path to login file
+
+- name: Add local Python path to login file
   become: true
-  lineinfile:
-    line: "export PATH={{ python3_local }}:$PATH"
+  ansible.builtin.lineinfile:
+    line: export PATH={{ python3_local }}:$PATH
     path: "{{ python3_bashrc }}"
     create: true
     state: present

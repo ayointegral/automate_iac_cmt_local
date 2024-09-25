@@ -2,7 +2,7 @@
 # Ensure the script runs only on RHEL 9
 - name: Ensure the script runs only on RHEL 9
   ansible.builtin.fail:
-    msg: "This script is only intended for RHEL 9 systems."
+    msg: This script is only intended for RHEL 9 systems.
   when: ansible_distribution_major_version != '9'
 
 # Manually register the system with Red Hat Subscription Manager using --force
