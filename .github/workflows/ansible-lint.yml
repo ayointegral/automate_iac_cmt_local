@@ -1,5 +1,5 @@
 # .github/workflows/ansible-lint.yml
-name: Lint and Restyle Ansible Files
+name: Ansible Lint Workflow
 
 on:
   pull_request:
@@ -13,9 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Setup Restyled
-        uses: restyled-io/actions/setup@v4
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
 
-      - name: Run Restyled for Ansible Lint
+      - name: Install Ansible and Ansible Lint
         run: |
-          restyle apply
+          python -m pip install --upgrade pip
+          pip install ansible ansible-lint
+
+      - name: Run Ansible Lint
+        run: |
+          ansible-lint
