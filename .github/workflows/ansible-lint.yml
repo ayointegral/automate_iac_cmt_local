@@ -1,18 +1,24 @@
-name: ansible-lint
+name: Lint and Restyle Ansible Files
+
 on:
   pull_request:
-    branches: ["main", "stable", "release/v*"]
+    branches:
+      - main
+
 jobs:
-  build:
-    name: Ansible Lint # Naming the build is important to use it as a status check
+  ansible-lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Run ansible-lint
-        uses: ansible/ansible-lint@main
-        # optional (see below):
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run Ansible Lint
+        uses: ansible/ansible-lint-action@v6
         with:
-          args: ""
-          setup_python: "true"
-          working_directory: "ansible"
-          requirements_file: ""
+          lint_args: "--force-color"
+          format: github
+      
+      - name: Restyled
+        uses: restyled-io/restyler@v0
+        with:
+          restylers: ansible-lint
