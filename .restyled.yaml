@@ -3,6 +3,6 @@
 restylers:
   - name: ansible-lint
     enabled: true
-    file_extensions:
-      - yml
-      - yaml
+    include:
+      - '**/*.yml'
+      - '**/*.yaml'
