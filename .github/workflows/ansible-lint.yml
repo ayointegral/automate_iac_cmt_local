@@ -1,3 +1,4 @@
+# .github/workflows/ansible-lint.yml
 name: Lint and Restyle Ansible Files
 
 on:
@@ -19,6 +20,6 @@ jobs:
           format: github
       
       - name: Restyled
-        uses: restyled-io/restyler@v0
+        uses: restyled-io/restyler@v1
         with:
           restylers: ansible-lint
