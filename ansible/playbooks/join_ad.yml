@@ -1,0 +1,6 @@
+---
+- name: Join RHEL9 machine to AD domain
+  hosts: web
+  become: true
+  roles:
+    - join_ad_domain

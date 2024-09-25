@@ -1,0 +1,42 @@
+---
+# Ensure the script runs only on RHEL 9
+- name: Ensure the script runs only on RHEL 9
+  ansible.builtin.fail:
+    msg: "This script is only intended for RHEL 9 systems."
+  when: ansible_distribution_major_version != '9'
+
+# Manually register the system with Red Hat Subscription Manager using --force
+- name: Register the system with Red Hat subscription
+  ansible.builtin.command: >
+    subscription-manager register --username "{{ rh_username }}" --password "{{ rh_password }}" --auto-attach --force
+  become: true
+  when: rh_username is defined and rh_password is defined
+
+# Ensure the required repositories are enabled
+- name: Enable RHEL 9 BaseOS and AppStream repositories
+  ansible.builtin.command: >
+    subscription-manager repos --enable=rhel-9-for-x86_64-baseos-rpms --enable=rhel-9-for-x86_64-appstream-rpms
+  become: true
+
+# Install necessary packages
+- name: Install necessary packages
+  ansible.builtin.dnf:
+    name:
+      - sssd
+      - realmd
+      - oddjob
+      - oddjob-mkhomedir
+      - adcli
+      - samba-common-tools
+      - krb5-workstation
+      - chrony
+      - policycoreutils-python-utils
+      - firewalld
+    state: present
+
+# Stop and disable firewalld
+- name: Stop and disable firewalld
+  ansible.builtin.systemd:
+    name: firewalld
+    state: stopped
+    enabled: false

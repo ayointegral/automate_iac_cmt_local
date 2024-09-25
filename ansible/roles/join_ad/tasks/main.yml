@@ -1,0 +1,100 @@
+---
+# roles/join_ad/tasks/main.yml
+- name: Install prerequisites for AD domain join
+  package:
+    name:
+      - sssd
+      - realmd
+      - oddjob
+      - oddjob-mkhomedir
+      - samba-common-tools
+      - adcli
+      - krb5-workstation
+      - sssd-tools
+    state: present
+
+- name: Update /etc/hosts with the domain and AD information
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ machine_ip }} {{ hostname }}.{{ ad_domain }} {{ hostname }}"
+    state: present
+  become: true
+
+- name: Add AD IP to /etc/hosts
+  lineinfile:
+    path: /etc/hosts
+    line: "{{ ad_ip }} ad.{{ ad_domain }} ad"
+    state: present
+  become: true
+
+- name: Set AD server as the nameserver in resolv.conf
+  lineinfile:
+    path: /etc/resolv.conf
+    line: "nameserver {{ ad_ip }}"
+    state: present
+    create: yes
+  become: true
+
+- name: Prevent NetworkManager from overwriting resolv.conf
+  lineinfile:
+    path: /etc/NetworkManager/NetworkManager.conf
+    regexp: '^dns=none'
+    line: 'dns=none'
+    state: present
+  become: true
+
+- name: Restart NetworkManager to apply DNS changes
+  service:
+    name: NetworkManager
+    state: restarted
+  become: true
+
+- name: Join the machine to the AD domain using realm
+  command: >
+    realm join --user={{ ad_admin_user }} --password={{ ad_admin_password }} {{ ad_domain }}
+  become: true
+
+- name: Configure SSSD for AD domain
+  blockinfile:
+    path: /etc/sssd/sssd.conf
+    block: |
+      [sssd]
+      domains = {{ ad_domain }}
+      config_file_version = 2
+      services = nss, pam
+
+      [domain/{{ ad_domain }}]
+      ad_domain = {{ ad_domain }}
+      krb5_realm = {{ ad_domain | upper }}
+      realmd_tags = manages-system joined-with-adcli
+      cache_credentials = true
+      id_provider = ad
+      krb5_store_password_if_offline = true
+      default_shell = /bin/bash
+      ldap_id_mapping = true
+      fallback_homedir = /home/%u@%d
+      access_provider = ad
+  become: true
+
+- name: Set appropriate permissions for sssd.conf
+  file:
+    path: /etc/sssd/sssd.conf
+    owner: root
+    group: root
+    mode: 0600
+  become: true
+
+- name: Restart SSSD service
+  service:
+    name: sssd
+    state: restarted
+  become: true
+
+- name: Allow domain users to run sudo and admins to do so without a password
+  blockinfile:
+    path: /etc/sudoers
+    block: |
+      %domain\ admins@{{ ad_domain }} ALL=(ALL) NOPASSWD: ALL
+      %{{ ad_domain }}\\domain\ users ALL=(ALL) ALL
+  validate: 'visudo -cf %s'
+  become: true

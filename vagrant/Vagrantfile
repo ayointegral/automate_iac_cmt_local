@@ -2,86 +2,94 @@
 # vi: set ft=ruby :
 
 Vagrant.configure("2") do |config|
-  # Use CentOS 7 or CentOS 8 depending on your preference or need
-  centos_version = "generic/centos9s"
+  # Use CentOS 9 Stream image
+  rhel_version = "generic/centos9s"
+
+  # Define a function to enable password authentication in RHEL
+  def enable_password_auth(vm)
+    vm.vm.provision "shell", inline: <<-SHELL
+      sudo sed -i 's/^#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+      sudo sed -i 's/^PasswordAuthentication no/PasswordAuthentication yes/' /etc/ssh/sshd_config
+      echo "vagrant:vagrant" | sudo chpasswd
+      sudo systemctl restart sshd
+    SHELL
+  end
 
   # Define the first VM - CentOS
   config.vm.define "nebula" do |nebula|
-    nebula.vm.box = centos_version
+    nebula.vm.box = rhel_version
     nebula.vm.hostname = "nebula"
-    nebula.vm.network "forwarded_port", guest: 22, host: 2222, id: "ssh"  # Forward SSH port
+    nebula.vm.network "public_network", ip: "192.168.0.60", bridge: "en1"  # Use Wi-Fi (en1) for networking
+    nebula.vm.network "forwarded_port", guest: 22, host: 1234, id: "ssh"  # Forward SSH port
+
+    nebula.ssh.username = "vagrant"     # Use default SSH username
+    nebula.ssh.insert_key = true        # Use default SSH key-based authentication
+
+    # Enable password authentication after SSH connection is established
+    enable_password_auth(nebula)
+
+    # Set provider to VMware Desktop
+    nebula.vm.provider "vmware_desktop" do |vmw|
+      vmw.memory = 1024  # Adjust memory for CentOS
+      vmw.cpus = 1       # Adjust CPU for CentOS
+    end
   end
 
   # Define the second VM - CentOS
   config.vm.define "cosmos" do |cosmos|
-    cosmos.vm.box = centos_version
+    cosmos.vm.box = rhel_version
     cosmos.vm.hostname = "cosmos"
+    cosmos.vm.network "public_network", ip: "192.168.0.61", bridge: "en1"  # Use Wi-Fi (en1) for networking
     cosmos.vm.network "forwarded_port", guest: 22, host: 2223, id: "ssh"  # Forward SSH port
+
+    cosmos.ssh.username = "vagrant"     # Use default SSH username
+    cosmos.ssh.insert_key = true        # Use default SSH key-based authentication
+
+    # Enable password authentication after SSH connection is established
+    enable_password_auth(cosmos)
+
+    # Set provider to VMware Desktop
+    cosmos.vm.provider "vmware_desktop" do |vmw|
+      vmw.memory = 1024  # Adjust memory for CentOS
+      vmw.cpus = 1       # Adjust CPU for CentOS
+    end
   end
 
   # Define the third VM - CentOS
   config.vm.define "quasar" do |quasar|
-    quasar.vm.box = centos_version
+    quasar.vm.box = rhel_version
     quasar.vm.hostname = "quasar"
-    quasar.vm.network "forwarded_port", guest: 22, host: 2224, id: "ssh"  # Forward SSH port
-  end
+    quasar.vm.network "public_network", ip: "192.168.0.62", bridge: "en1"  # Use Wi-Fi (en1) for networking
+    quasar.vm.network "forwarded_port", guest: 22, host: 2224, id: "ssh"
 
-  # Define the fourth VM - CentOS
-  config.vm.define "pulsar" do |pulsar|
-    pulsar.vm.box = centos_version
-    pulsar.vm.hostname = "pulsar"
-    pulsar.vm.network "forwarded_port", guest: 22, host: 2225, id: "ssh"  # Forward SSH port
-  end
+    quasar.ssh.username = "vagrant"     # Use default SSH username
+    quasar.ssh.insert_key = true        # Use default SSH key-based authentication
 
-  # Define the fifth VM - CentOS
-  config.vm.define "supernova" do |supernova|
-    supernova.vm.box = centos_version
-    supernova.vm.hostname = "supernova"
-    supernova.vm.network "forwarded_port", guest: 22, host: 2226, id: "ssh"  # Forward SSH port
-  end
+    # Enable password authentication after SSH connection is established
+    enable_password_auth(quasar)
 
-  # Define the sixth VM - CentOS
-  config.vm.define "ansibleserver" do |supernova|
-    supernova.vm.box = centos_version
-    supernova.vm.hostname = "ansibleserver"
-    supernova.vm.network "forwarded_port", guest: 22, host: 2227, id: "ssh"  # Forward SSH port
+    # Set provider to VMware Desktop
+    quasar.vm.provider "vmware_desktop" do |vmw|
+      vmw.memory = 1024  # Adjust memory for CentOS
+      vmw.cpus = 1       # Adjust CPU for CentOS
+    end
   end
 
   # Define the Windows Server VM
   config.vm.define "windows-server" do |windows|
-    windows.vm.box = "iliec/windows-2019-standard"  # Windows Server 2019 Eval box
-    windows.vm.hostname = "galaxyrealm"
+    windows.vm.box = "gusztavvargadr/windows-server-2019-standard"
+    windows.vm.hostname = "ad"
+    windows.vm.network "public_network", ip: "192.168.0.63"  # Remove the bridge option
     windows.vm.network "forwarded_port", guest: 3389, host: 3389, id: "rdp"  # Forward RDP port
+    windows.vm.network "forwarded_port", guest: 5985, host: 5985, id: "winrm"  # Forward WinRM HTTP port
+    windows.vm.network "forwarded_port", guest: 5986, host: 5986, id: "winrm-https"  # Forward WinRM HTTPS port
 
-    # WinRM configuration
-    windows.vm.network "forwarded_port", guest: 5985, host: 5985, id: "winrm"  # Forward WinRM HTTP port (5985)
-    windows.vm.network "forwarded_port", guest: 5986, host: 5986, id: "winrm-https"  # Forward WinRM HTTPS port (5986)
-
-    windows.vm.provider "parallels" do |prl|
-      prl.memory = 4096  # Adjust memory for Windows
-      prl.cpus = 2       # Adjust CPU for Windows
+    windows.vm.provider "vmware_desktop" do |vmw|
+      vmw.memory = 4096  # Adjust memory for Windows
+      vmw.cpus = 2       # Adjust CPU for Windows
     end
 
     windows.vm.guest = :windows
     windows.vm.communicator = "winrm"
-
-    # Provisioning: Enable and configure WinRM for Ansible
-    windows.vm.provision "shell", inline: <<-SHELL
-      # Enable WinRM for Ansible
-      winrm quickconfig -q
-      winrm set winrm/config/service/Auth @{Basic="true"}
-      winrm set winrm/config/service @{AllowUnencrypted="true"}
-      winrm set winrm/config/listener?Address=*+Transport=HTTP @{Port="5985"}
-      Set-Item -Path WSMan:\localhost\Service\AllowUnencrypted -Value true
-      Set-Item -Path WSMan:\localhost\Service\Auth\Basic -Value true
-
-      # Open necessary firewall ports
-      netsh advfirewall firewall add rule name="Allow WinRM" dir=in action=allow protocol=TCP localport=5985
-      netsh advfirewall firewall add rule name="Allow WinRM Secure" dir=in action=allow protocol=TCP localport=5986
-
-      # Set up a user with admin privileges if needed for Ansible
-      net user ansible /add
-      net localgroup administrators ansible /add
-    SHELL
   end
 end

@@ -1,0 +1,17 @@
+repos:
+  - repo: local
+    hooks:
+      - id: ansible-vault-encrypt-decrypt-check
+        name: Ansible Vault Encrypt Check
+        entry: |
+          /bin/bash -c 'for file in $(find ansible/group_vars/ ansible/host_vars/ ansible/roles/*/vars/ -type f -name "*.yml"); do
+            if grep -q "\$ANSIBLE_VAULT" "$file"; then
+              echo "$file is already encrypted, skipping encryption."
+            else
+              echo "$file is not encrypted, encrypting now..."
+              ansible-vault encrypt "$file" --vault-password-file ansible_vault_password.txt
+            fi
+          done'
+        language: system
+        stages: [pre-commit]
+        files: \.yml$

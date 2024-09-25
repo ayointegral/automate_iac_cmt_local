@@ -1,0 +1,11 @@
+---
+# handlers/main.yml
+- name: Restart SSSD
+  service:
+    name: sssd
+    state: restarted
+
+- name: Restart NetworkManager
+  service:
+    name: NetworkManager
+    state: restarted

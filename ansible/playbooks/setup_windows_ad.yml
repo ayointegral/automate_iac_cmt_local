@@ -1,0 +1,5 @@
+---
+- name: Set up Windows Server as AD Domain Controller with DNS
+  hosts: windows_server
+  roles:
+    - windows_ad_dc

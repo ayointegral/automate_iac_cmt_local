@@ -1,0 +1,14 @@
+[sssd]
+services = nss, pam
+config_file_version = 2
+domains = {{ ad_domain }}.local
+
+[domain/{{ ad_domain }}.local]
+ad_domain = {{ ad_domain }}.local
+krb5_realm = {{ ad_domain | upper }}
+realmd_tags = manages-system joined-with-adcli
+cache_credentials = True
+id_provider = ad
+fallback_homedir = /home/%u@%d
+default_shell = /bin/bash
+access_provider = ad

@@ -1,0 +1,9 @@
+---
+- name: Prepare AD Join - Install Prerequisites
+  ansible.builtin.include_tasks: install.yml
+
+- name: Prepare AD Join - AD Join Setup
+  ansible.builtin.include_tasks: configure.yml
+
+- name: Prepare AD Join - Join and Start Service
+  ansible.builtin.include_tasks: join.yml

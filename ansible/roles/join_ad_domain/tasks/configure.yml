@@ -1,0 +1,95 @@
+---
+# Configure system files and SSSD
+
+# Ensure hostname is correctly set
+- name: Set hostname to include AD domain if not already set
+  ansible.builtin.hostname:
+    name: "{{ ansible_hostname }}.{{ ad_domain }}"
+  when: ansible_hostname.split('.')[-1] != ad_domain
+
+# Backup and update /etc/hosts
+- name: Backup /etc/hosts file
+  ansible.builtin.copy:
+    src: /etc/hosts
+    dest: /etc/hosts.bak
+    remote_src: true
+    mode: '0644'
+
+- name: Replace /etc/hosts with correct entries
+  ansible.builtin.template:
+    src: hosts.j2
+    dest: /etc/hosts
+    mode: '0644'
+
+# Manage /etc/resolv.conf
+- name: Ensure /etc/resolv.conf is correctly configured
+  block:
+    - name: Remove immutable attribute from /etc/resolv.conf
+      ansible.builtin.command:
+        cmd: chattr -i /etc/resolv.conf
+      register: result
+      failed_when: "'Operation not permitted' in result.stderr"
+      changed_when: result.rc == 0
+
+    - name: Backup /etc/resolv.conf
+      ansible.builtin.copy:
+        src: /etc/resolv.conf
+        dest: /etc/resolv.conf.bak
+        remote_src: true
+        mode: '0644'
+
+    - name: Update /etc/resolv.conf
+      ansible.builtin.template:
+        src: resolv.conf.j2
+        dest: /etc/resolv.conf
+        mode: '0644'
+
+    - name: Add immutable attribute to /etc/resolv.conf
+      ansible.builtin.command:
+        cmd: chattr +i /etc/resolv.conf
+      changed_when: false
+
+# Configure Kerberos (krb5.conf)
+- name: Ensure /etc/krb5.conf is configured correctly
+  ansible.builtin.template:
+    src: krb5.conf.j2
+    dest: /etc/krb5.conf
+    mode: '0644'
+
+# Configure SSSD for the domain
+- name: Configure SSSD for the domain
+  ansible.builtin.template:
+    src: sssd.conf.j2
+    dest: /etc/sssd/sssd.conf
+    mode: '0600'
+
+# Set up authselect with mkhomedir and apply changes
+- name: Set up authselect with mkhomedir
+  ansible.builtin.command:
+    cmd: authselect select sssd with-mkhomedir --force
+  changed_when: false
+
+- name: Apply authselect changes
+  ansible.builtin.command:
+    cmd: authselect apply-changes
+  changed_when: false
+
+# Configure chrony with AD IP
+- name: Remove the refclock line from chrony config
+  ansible.builtin.lineinfile:
+    path: /etc/chrony.conf
+    regexp: '^refclock PHC \/dev\/ptp_hyperv'
+    state: absent
+
+- name: Update chrony config with AD IP and required settings
+  ansible.builtin.template:
+    src: chrony.conf.j2
+    dest: /etc/chrony.conf
+    mode: '0644'
+
+# Ensure chronyd service is running
+- name: Start and enable chronyd service
+  ansible.builtin.systemd:
+    name: chronyd
+    state: started
+    enabled: true

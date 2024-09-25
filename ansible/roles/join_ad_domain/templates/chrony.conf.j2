@@ -1,0 +1,18 @@
+pool 2.rhel.pool.ntp.org iburst
+sourcedir /run/chrony-dhcp
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+keyfile /etc/chrony.keys
+ntsdumpdir /var/lib/chrony
+leapsectz right/UTC
+logdir /var/log/chrony
+
+# BEGIN ANSIBLE MANAGED BLOCK
+server {{ ad_ip }} iburst
+pool 2.rhel.pool.ntp.org iburst
+driftfile /var/lib/chrony/drift
+makestep 1.0 3
+rtcsync
+logdir /var/log/chrony
+# END ANSIBLE MANAGED BLOCK
