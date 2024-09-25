@@ -1,6 +1,5 @@
----
 # .github/workflows/ansible-lint.yml
-name: Ansible Lint Workflow
+name: Ansible Lint and Fixes
 
 on:
   pull_request:
@@ -8,7 +7,7 @@ on:
       - main
 
 jobs:
-  ansible-lint:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,13 +16,22 @@ jobs:
       - name: Set up Python environment
         uses: actions/setup-python@v4
         with:
-          python-version: 3.x
+          python-version: '3.x'
 
-      - name: Install Ansible and Ansible Lint
+      - name: Install Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install ansible ansible-lint
+          pip install ansible ansible-lint yamllint
+          npm install -g prettier
+
+      - name: Run Prettier to Fix YAML Formatting
+        run: |
+          prettier --write "**/*.yml"
+
+      - name: Run Sed for Jinja Spacing and FQCN
+        run: |
+          find . -name "*.yml" -exec sed -i 's/{{\([^ ]\)/{{ \1/g; s/\([^ ]\)}}/\1 }}/g; s/yum/ansible.builtin.yum/g; s/command/ansible.builtin.command/g' {} \;
 
       - name: Run Ansible Lint
         run: |
-          ansible-lint
+          ansible-lint --fix
