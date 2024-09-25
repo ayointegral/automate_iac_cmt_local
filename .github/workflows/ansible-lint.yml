@@ -20,6 +20,6 @@ jobs:
           format: github
       
       - name: Restyled
-        uses: restyled-io/restyler@v1
+        uses: restyled-io/actions/setup@v4
         with:
           restylers: ansible-lint
