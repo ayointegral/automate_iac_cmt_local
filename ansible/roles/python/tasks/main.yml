@@ -1,12 +1,12 @@
 ---
 - name: Ensure all packages are up to date
-  yum:
-    name: '*'
+  ansible.builtin.dnf:
+    name: "*"
     state: latest
   become: true
 
 - name: Install Python 3
-  yum:
+  ansible.builtin.dnf:
     name: python3
     state: present
   become: true

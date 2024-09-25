@@ -1,8 +1,7 @@
 ---
 - name: Reload firewall
-  command: firewall-cmd --reload
-
+  ansible.builtin.command: firewall-cmd --reload
 - name: Restart Docker
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     state: restarted

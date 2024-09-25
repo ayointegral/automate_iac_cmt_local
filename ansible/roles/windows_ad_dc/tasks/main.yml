@@ -1,0 +1,36 @@
+---
+# roles/windows_ad_dc/tasks/main.yml
+
+- name: Configure static IP and DNS settings
+  ansible.windows.win_shell: |
+    New-NetIPAddress `
+      -InterfaceAlias "Ethernet" `
+      -IPAddress {{ windows_static_ip }} `
+      -PrefixLength 24 `
+      -DefaultGateway {{ windows_gateway }}
+    Set-DnsClientServerAddress `
+      -InterfaceAlias "Ethernet" `
+      -ServerAddresses {{ windows_dns_ip }}
+
+- name: Install AD Domain Services and DNS roles
+  ansible.windows.win_feature:
+    name:
+      - AD-Domain-Services
+      - DNS
+    state: present
+
+- name: Promote server to a Domain Controller with DNS
+  ansible.windows.win_shell: |
+    Import-Module ADDSDeployment
+    Install-ADDSForest `
+      -DomainName "{{ ad_domain_name }}" `
+      -DomainNetBiosName "{{ ad_netbios_name }}" `
+      -SafeModeAdministratorPassword (ConvertTo-SecureString -AsPlainText "{{ safe_mode_password }}" -Force) `
+      -InstallDNS `
+      -Force `
+      -NoRebootOnCompletion $false
+
+- name: Reboot server to complete AD promotion
+  ansible.windows.win_reboot:
+    reboot_timeout: 600
+  when: reboot_required is defined and reboot_required == true

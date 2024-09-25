@@ -1,3 +1,4 @@
+---
 ## Travis CI configuration for the python Ansible role.
 ##
 ##  <https://travis-ci.org/mdklatt/ansible-python-role>
@@ -12,7 +13,7 @@ branches:
     - master
     - dev
 
-sudo: false  # use container infrastructure
+sudo: false # use container infrastructure
 
 install:
   - python -m pip install ansible
@@ -21,7 +22,6 @@ install:
 script:
   - ansible --version
   - pytest --verbose tests/test_role.py
-
 # TODO
 #notifications:
 #  webhooks: https://galaxy.ansible.com/api/v1/notifications/

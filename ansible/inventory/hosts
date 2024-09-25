@@ -1,25 +1,32 @@
-[nebula_host]
-10.211.55.23
+# Group for all Linux hosts
+[linux_hosts]
+nebula ansible_host=192.168.0.60
+cosmos ansible_host=192.168.0.61
+quasar ansible_host=192.168.0.62
 
-[cosmos_host]
-10.211.55.36
+# Group for Windows hosts
+[windows_hosts]
+windows ansible_host=192.168.0.63
 
-[quasar_host]
-10.211.55.34
+# Common variables for all Linux hosts
+[linux_hosts:vars]
+ansible_user=vagrant
+ansible_port=22
+ansible_password=vagrant
 
-[pulsar_host]
-10.211.55.38
+# Variables for the Windows host
+[windows_hosts:vars]
+ansible_user=vagrant
+ansible_password=vagrant
+ansible_port=5985
+ansible_connection=winrm
+ansible_winrm_server_cert_validation=ignore
+ansible_winrm_transport=basic
+ansible_winrm_scheme=http
+ansible_become=false
 
-[supernova_host]
-10.211.55.37
-
-[ansibleserver_host]
-10.211.55.40
-
+# Group for web servers (Linux hosts)
 [web]
-nebula ansible_host=10.211.55.35 ansible_user=vagrant ansible_port=22 ansible_ssh_private_key_file=/Users/ayodele/Workspace/automation/vagrant/.vagrant/machines/nebula/parallels/private_key
-cosmos ansible_host=10.211.55.36 ansible_user=vagrant ansible_port=22 ansible_ssh_private_key_file=/Users/ayodele/Workspace/automation/vagrant/.vagrant/machines/cosmos/parallels/private_key
-quasar ansible_host=10.211.55.34 ansible_user=vagrant ansible_port=22 ansible_ssh_private_key_file=/Users/ayodele/Workspace/automation/vagrant/.vagrant/machines/quasar/parallels/private_key
-pulsar ansible_host=10.211.55.38 ansible_user=vagrant ansible_port=22 ansible_ssh_private_key_file=/Users/ayodele/Workspace/automation/vagrant/.vagrant/machines/pulsar/parallels/private_key
-supernova ansible_host=10.211.55.37 ansible_user=vagrant ansible_port=22 ansible_ssh_private_key_file=/Users/ayodele/Workspace/automation/vagrant/.vagrant/machines/supernova/parallels/private_key
-ansibleserver ansible_host=10.211.55.40 ansible_user=vagrant ansible_port=22 ansible_ssh_private_key_file=/Users/ayodele/Workspace/automation/vagrant/.vagrant/machines/ansibleserver/parallels/private_key
+nebula
+cosmos
+quasar

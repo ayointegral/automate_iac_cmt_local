@@ -1,20 +1,21 @@
+---
 - name: Install and start firewalld
-  yum:
+  ansible.builtin.dnf:
     name: firewalld
     state: present
 
 # Ensure firewalld is started and enabled
 - name: Ensure firewalld is started and enabled
-  systemd:
+  ansible.builtin.systemd:
     name: firewalld
     state: started
-    enabled: yes
+    enabled: true
 
 # Allow Docker daemon port (2376) through firewall
 - name: Allow Docker daemon port (2376) through firewall
   ansible.posix.firewalld:
     port: 2376/tcp
-    permanent: yes
+    permanent: true
     state: enabled
   notify:
     - Reload firewall
@@ -23,7 +24,7 @@
 - name: Allow Docker Swarm management port (2377) through firewall
   ansible.posix.firewalld:
     port: 2377/tcp
-    permanent: yes
+    permanent: true
     state: enabled
   notify:
     - Reload firewall
@@ -32,7 +33,7 @@
 - name: Allow Overlay network traffic port (4789) through firewall
   ansible.posix.firewalld:
     port: 4789/udp
-    permanent: yes
+    permanent: true
     state: enabled
   notify:
     - Reload firewall
@@ -41,7 +42,7 @@
 - name: Allow Docker Swarm node communication ports (7946) through firewall
   ansible.posix.firewalld:
     port: 7946/tcp
-    permanent: yes
+    permanent: true
     state: enabled
   notify:
     - Reload firewall
@@ -50,7 +51,7 @@
 - name: Allow Docker Swarm node communication ports (7946) through firewall
   ansible.posix.firewalld:
     port: 7946/udp
-    permanent: yes
+    permanent: true
     state: enabled
   notify:
     - Reload firewall
@@ -59,8 +60,8 @@
 - name: Enable IP masquerading for Docker network
   ansible.posix.firewalld:
     zone: public
-    masquerade: yes
-    permanent: yes
+    masquerade: true
+    permanent: true
     state: enabled
   notify:
     - Reload firewall
@@ -72,13 +73,13 @@
 
 # Set DNS for Docker daemon (ensure no duplication)
 - name: Set DNS for Docker daemon
-  copy:
+  ansible.builtin.copy:
     dest: /etc/docker/daemon.json
     content: |
       {
         "dns": ["8.8.8.8", "8.8.4.4"]
       }
-    mode: '0644'
-    backup: yes
+    mode: "0644"
+    backup: true
   notify:
     - Restart Docker

@@ -1,9 +1,8 @@
 ---
 - name: Clean all yum cache
-  command: yum clean all
-
+  ansible.builtin.command: yum clean all
 - name: Install required packages for Docker
-  yum:
+  ansible.builtin.dnf:
     name:
       - yum-utils
       - device-mapper-persistent-data
@@ -11,13 +10,13 @@
     state: present
 
 - name: Add Docker repository
-  command: >
+  ansible.builtin.command: >
     yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
   args:
     creates: /etc/yum.repos.d/docker-ce.repo
 
 - name: Install Docker
-  yum:
+  ansible.builtin.dnf:
     name:
       - docker-ce
       - docker-ce-cli
@@ -27,43 +26,43 @@
     state: latest
 
 - name: Install container-selinux
-  yum:
+  ansible.builtin.dnf:
     name: container-selinux
     state: present
   when: ansible_distribution_major_version is version('9', '<')
 
 - name: Start and enable Docker service
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     state: started
-    enabled: yes
+    enabled: true
 
 - name: Ensure current user is added to the docker group
-  user:
+  ansible.builtin.user:
     name: "{{ ansible_user }}"
     groups: docker
-    append: yes
+    append: true
 
 - name: Check if Docker group exists
-  getent:
+  ansible.builtin.getent:
     database: group
     key: docker
   register: docker_group
 
 - name: Create Docker group if it doesn't exist
-  group:
+  ansible.builtin.group:
     name: docker
     state: present
   when: docker_group is not defined
 
 - name: Change ownership of Docker socket to root:docker
-  file:
+  ansible.builtin.file:
     path: /var/run/docker.sock
     owner: root
     group: docker
     mode: "0660"
 
 - name: Restart Docker service after permission changes
-  systemd:
+  ansible.builtin.systemd:
     name: docker
     state: restarted

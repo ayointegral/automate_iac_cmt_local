@@ -1,0 +1,34 @@
+---
+# Join the AD domain
+- name: Gather realm join status
+  ansible.builtin.command:
+    cmd: realm list
+  register: realm_status
+  changed_when: false
+
+- name: Leave AD domain if already joined
+  ansible.builtin.command:
+    cmd: realm leave
+  when: ad_domain in realm_status.stdout
+  changed_when: "'Left domain' in leave_domain_status.stdout"
+  register: leave_domain_status
+
+- name: Join the AD domain using realm
+  ansible.builtin.shell: |
+    set -o pipefail
+    echo '{{ ad_pass }}' | realm join --user="{{ ad_user }}" {{ ad_domain }}
+  register: join_status
+  retries: 1
+  delay: 5
+  until: join_status.rc == 0
+  changed_when: join_status.rc == 0
+
+- name: Join AD domain using adcli (as fallback)
+  ansible.builtin.shell: |
+    set -o pipefail
+    echo "{{ ad_pass }}" | adcli join --user={{ ad_user }} --domain={{ ad_domain }} --domain-controller=ad.{{ ad_domain }}
+  register: adcli_join_status
+  retries: 1
+  delay: 5
+  when: join_status.rc != 0
+  changed_when: adcli_join_status.rc == 0

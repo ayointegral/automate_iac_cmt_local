@@ -1,3 +1,4 @@
+---
 ## Test playbook for the python3 role.
 ##
 - hosts: localhost
